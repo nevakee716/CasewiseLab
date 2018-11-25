@@ -1,0 +1,57 @@
+@import "../../_variables";
+@import "../../_mixins";
+
+/* Properties group header */
+div.cwPropertiesTableHeader {
+  font-weight: bold;
+  border-bottom: 1px solid @cwColor1;
+}
+
+/* List Box header */
+ul.property-details .property-title {
+  font-weight: bold;
+  font-size: @cwFontTitleSize;
+  border-bottom: 1px solid @cwColor1;
+  .cw-property-details-right {
+    .btn:hover {
+      .fa {
+        color: @cwPageActionButtonIconColor;
+      }
+    }
+  }
+}
+
+/* Profile button */
+ul.popout-top-container {
+  .btn .fa {
+    color: @cwPopupTitleTextColor;
+  }
+}
+
+/* Diagram breadcrumb */
+div.cwDiagramBreadcrumb {
+  a.btn {
+    i.fa {
+      color:@cwPageActionButtonIconColor;
+    }
+  }
+}
+
+/* Table Complex button */
+.k-state-selected{
+  color: @cwColor1;
+}
+
+/* Advanced Matrix header */
+table.cw-matrix-advanced {
+  tr:hover{
+    th.cw-header {
+      a {
+        color: @cwBodyBackgroundColor;
+        div:before, div:after {
+          background: @cwBodyBackgroundColor;
+        }
+      }
+    }
+  }
+}

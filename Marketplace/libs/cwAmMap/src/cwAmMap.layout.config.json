@@ -1,0 +1,32 @@
+{
+	"Name": "cw-am-map",
+	"DisplayName": "SVG Map",
+	"Description": "Display a map",
+	"JavaScriptClassName": "CwAmMap",
+	"Options": [{
+		"Id": "initial-map",
+		"DisplayName": "Map",
+		"Description": "The name of the map you want to display",
+		"Type": 0
+	}, {
+		"Id": "initial-map-scriptname",
+		"DisplayName": "Map (scriptname)",
+		"Description": "The property which contains the name of the map to be displayed",
+		"Type": 0
+	}, {
+		"Id": "iso-code-pt",
+		"DisplayName": "ISO code scriptname",
+		"Description": "ISO code property scriptname",
+		"Type": 0
+	}, {
+		"Id": "lat-lng-pt",
+		"DisplayName": "Lat. Long. scriptname",
+		"Description": "Latitude Longitude property scriptname",
+		"Type": 0
+	}, {
+		"Id": "low-resolution",
+		"DisplayName": "Low resolution",
+		"Description": "Check this option if you want to use Low resolution maps",
+		"Type": 1
+	}]
+}

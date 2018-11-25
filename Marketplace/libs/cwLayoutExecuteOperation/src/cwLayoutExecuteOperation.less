@@ -1,0 +1,29 @@
+@import "../../_mixins";
+@import "../../_variables";
+
+div.execute-operation-container{
+	display: inline-block;
+	margin: 0px 10px;
+	background: none;
+
+	button.execute-operation-button{
+		border-radius: 4px;
+	}
+
+	div.execute-operation-result{
+		display: inline-block;
+		margin: 0px 10px;
+
+		i.fa-check{
+			color: @cwNotificationMessageBackgroundColor;
+		}
+		i.fa-times{
+			color: @cwNotificationErrorBackgroundColor;
+		}
+
+		span.execute-operation-result-message-error{
+    	margin-left: 10px;
+		}
+
+	}
+}

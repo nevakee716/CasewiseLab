@@ -1,0 +1,56 @@
+.matrixHeader {
+    border-bottom-style: double;
+    border-right-style: double;
+    font-weight: bold;
+
+}
+
+.matrixColummHeader{
+    font-weight: bold;
+    border-bottom-style: double;
+    border-right: solid 1px;
+}
+
+.matrixColummHeader > div{
+    display: inline-block;
+    overflow: hidden;
+    width: 1.5em;
+}
+.matrixColummHeader > div > div{
+    display: inline-block;
+    white-space: nowrap;
+    line-height: 1.5;
+    transform: translate(0,100%) rotate(-90deg);
+    transform-origin: 0 0;
+}
+/* This element stretches the parent to be square
+   by using the mechanics of vertical margins  */
+.matrixColummHeader > div > div:after {
+    content: "";
+    display: block;
+    margin: -1.5em 0 100%;
+}
+    
+    
+.matrixRowHeader{
+    font-weight: bold;
+    border-right-style: double;
+    border-bottom: solid 1px;
+    padding: 10px;
+}
+
+.cellChecked {
+    border: solid 1px;
+    background-color:#c5c5c5;
+}
+
+.cellNotChecked {
+    border: solid 1px;
+}
+
+.matrix {
+    padding: 20px;
+    text-align: center;
+    table-layout: fixed;
+    font-size: 30px;
+}

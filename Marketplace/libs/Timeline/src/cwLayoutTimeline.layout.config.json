@@ -1,0 +1,30 @@
+{
+    "Name": "Timeline",
+    "DisplayName": "Timeline",
+    "Description": "Allow you to display a timeline of your objects and their associations",
+    "JavaScriptClassName": "cwLayoutTimeline",
+    "Options": [
+    {
+        "Id": "hidden-nodes",
+        "DisplayName": "Hidden Nodes",
+        "Description": "Use comma as splitter character",
+        "Type": 0
+    },
+    {
+        "Id": "merged-nodes",
+        "DisplayName": "Merged Nodes by step",
+        "Description": "Use comma as splitter character",
+        "Type": 0
+    },
+    {
+        "Id": "steps",
+        "DisplayName": "Steps",
+        "Description": "Use a json object to describe your step (see documentation)",
+        "Type": 0
+    },{
+        "Id": "stack",
+        "DisplayName": "Stack",
+        "Description": "Time items stacked?",
+        "Type": 1
+    }]
+}

@@ -1,0 +1,17 @@
+{
+	"Name": "cw-layout-execute-operation",
+	"DisplayName": "Execute Operation",
+	"Description": "Display a list with button to execute the operation",
+	"JavaScriptClassName": "cwLayoutExecuteOperation",
+	"Options":[{
+    "Id": "display-title",
+    "DisplayName": "Display a Title",
+    "Description": "Display a simple title for the layout list",
+    "Type" :  1
+  },{
+		"Id": "evod-url",
+		"DisplayName": "Evolve On Demand URL",
+		"Description": "The URL of Evolve On Demand web application",
+		"Type":0
+	}]
+}

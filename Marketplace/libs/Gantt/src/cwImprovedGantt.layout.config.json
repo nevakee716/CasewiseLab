@@ -1,0 +1,14 @@
+{
+    "Name": "ImprovedGantt",
+    "DisplayName": "Improved Gantt",
+    "Description": "Allow you to display your objects in a Gantt",
+    "JavaScriptClassName": "cwImprovedGantt",
+    "Options": [
+    {
+        "Id": "JsonConfiguration",
+        "DisplayName": "Json Configuration",
+        "Description": "Check documentation",
+        "Type": 0
+    }
+    ]
+}

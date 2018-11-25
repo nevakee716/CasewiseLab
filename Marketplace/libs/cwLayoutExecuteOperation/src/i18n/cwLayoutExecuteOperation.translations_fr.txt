@@ -1,0 +1,3 @@
+btn_execute_operation = Exécuter
+execute_config_type_missing = La propriété TYPE est manquante. Veuillez contacter votre administrateur.
+execute_config_url_missing = L''option URL n''est pas renseignée. Veuillez contacter votre administrateur.

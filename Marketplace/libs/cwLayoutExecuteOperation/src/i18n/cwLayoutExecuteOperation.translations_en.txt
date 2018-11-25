@@ -1,0 +1,3 @@
+btn_execute_operation = Execute
+execute_config_type_missing = TYPE property is missing. Please contact your administrator
+execute_config_url_missing = URL option is missing. Please contact your administrator

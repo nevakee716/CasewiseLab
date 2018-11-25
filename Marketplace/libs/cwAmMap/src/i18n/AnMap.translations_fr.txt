@@ -1,0 +1,1 @@
+anmap_missing_map = Le nom de la carte est invalide. Vérifier le nom de la carte à utiliser.

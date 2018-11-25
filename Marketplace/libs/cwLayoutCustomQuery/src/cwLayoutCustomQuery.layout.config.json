@@ -1,0 +1,22 @@
+{
+	"Name": "cw-layout-custom-query",
+	"DisplayName": "Custom Query",
+	"Description": "Allow users to filter data",
+	"JavaScriptClassName": "cwLayoutCustomQuery",
+	"Options": [{
+		"Id":"init-filters",
+		"DisplayName":"Init filters",
+		"Description":"Set intial values for filters using JSON syntax",
+		"Type":0
+		},{
+		"Id":"pagination-options",
+		"DisplayName":"Pagination options",
+		"Description":"Set the options of the pagination module, using JSON syntax",
+		"Type":0
+		},{
+			"Id":"chart-options",
+			"DisplayName":"Chart options",
+			"Description":"Set the options of the chart module, using JSON syntax",
+			"Type":0
+		}]
+}

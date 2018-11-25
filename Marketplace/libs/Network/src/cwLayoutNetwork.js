@@ -1,0 +1,132 @@
+/* Copyright (c) 2012-2013 Casewise Systems Ltd (UK) - All rights reserved */
+
+
+
+/*global cwAPI, jQuery */
+(function(cwApi, $) {
+    "use strict";
+    if (cwApi && cwApi.cwLayouts && cwApi.cwLayouts.cwLayoutNetwork) {
+        var cwLayoutNetwork = cwApi.cwLayouts.cwLayoutNetwork;
+    } else {
+        // constructor
+        var cwLayoutNetwork = function(options, viewSchema) {
+            cwApi.extend(this, cwApi.cwLayouts.CwLayout, options, viewSchema); // heritage
+            cwApi.registerLayoutForJSActions(this); // execute le applyJavaScript après drawAssociations
+            this.construct(options);
+        };
+    }
+
+    cwLayoutNetwork.prototype.construct = function(options) {
+        this.definition = {};
+        this.definition.capinetworkScriptname = "capinetwork";
+        this.definition.capinetworkDisplayname = "Network";
+        this.definition.capinetworkLabelScriptname = "label";
+        this.definition.capinetworkLabelDisplayname = "Libéllé";
+        this.definition.capinetworkToAnyAssociationScriptname = "CAPINETWORKTOASSOCWAPINETWORKTOANYOBJECTTOANYOBJECT";
+        this.definition.capinetworkToAnyAssociationDisplayName = "Present On Network";
+        this.definition.capinetworkCreateOnViewScriptname = "createoncwview";
+        this.definition.capinetworkConfigurationScriptname = "configuration";
+        this.canCreateNetwork = false;
+        this.canUpdateNetwork = false;
+        this.networkConfiguration = {};
+        this.networkConfiguration.enableEdit = this.options.CustomOptions['enableEdit'];
+        this.networkConfiguration.nodes = {}; 
+        
+
+
+        try {
+            this.definition.capinetworkCreateOnViewDisplayName = cwAPI.mm.getProperty(this.definition.capinetworkScriptname,this.definition.capinetworkCreateOnViewScriptname).name;
+            this.definition.capinetworkConfigurationDisplayname = cwAPI.mm.getProperty(this.definition.capinetworkScriptname,this.definition.capinetworkConfigurationScriptname).name;
+
+            if(cwAPI.cwUser.isCurrentUserSocial() === false && cwAPI.mm.getLookupsOnAccessRights(this.definition.capinetworkScriptname,"CanCreate").length > 0) {
+                this.canCreateNetwork = true;
+            }
+            if(cwAPI.cwUser.isCurrentUserSocial() === false && cwAPI.mm.getLookupsOnAccessRights(this.definition.capinetworkScriptname,"CanUpdate").length > 0) {
+                this.canUpdateNetwork = true;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+        
+
+        this.hiddenNodes = [];
+        this.complementaryNode = [];
+        this.externalFilters = [];
+        
+        this.behaviour = {};        
+        this.behaviour.add = false;
+        this.behaviour.absolute = false;
+        this.behaviour.or = false;
+        this.behaviour.highlight = true;
+
+        this.nodeFiltered = [];
+        this.popOut = [];
+        this.specificGroup = [];
+        this.directionList = [];
+        this.groupToSelectOnStart = [];
+        this.objects = {};
+        this.layoutsByNodeId = {};
+        this.clusters = [];
+        this.init = true;
+        this.clustered = false;
+        this.clusterByGroupOption = {};
+        this.clusterByGroupOption.head = "";
+        this.clusterByGroupOption.child = [];
+
+
+
+        this.multiLineCount = this.options.CustomOptions['multiLineCount'];
+        this.getOption('complementaryNode','complementaryNode',',');
+        this.getOption('hidden-nodes','hiddenNodes',',');
+        this.getOption('groupToSelectOnStart','groupToSelectOnStart',',');        
+        this.getOption('specificGroup','specificGroup','#',',');
+        this.getOption('complementaryNode','assignEdge','#',',');     
+        this.getOption('popOutList','popOut','#',',');       
+
+        this.startingNetwork = this.options.CustomOptions['startingNetwork'];
+        this.getOption('duplicateNodes','duplicateNode',',');
+
+
+        this.getFontAwesomeList(this.options.CustomOptions['iconGroup']);
+        this.getdirectionList(this.options.CustomOptions['arrowDirection']);
+
+        this.getExternalFilterNodes(this.options.CustomOptions['filterNode'], this.options.CustomOptions['filterNodeBehaviour']);
+
+        this.edgeOption = this.options.CustomOptions['zipEdgeOption'];
+        this.edgeZipped = this.options.CustomOptions['zipEdgeInitState'];
+        this.hideEdgeButton = this.options.CustomOptions['hideEdgeButton'];
+
+        this.clusterOption = this.options.CustomOptions['clusterOn'];
+        this.hideClusterMenu = this.options.CustomOptions['hideClusterMenu'];
+        this.getStartingCluster(this.options.CustomOptions['clusterToSelectOnStart']);
+
+        this.physicsOption = this.options.CustomOptions['physicsOn'];
+        this.hidePhysicsButton = this.options.CustomOptions['hidePhysicsButton'];
+        this.physicsOptionInitialState = this.options.CustomOptions['physicsInitialState'];
+
+        this.removeLonely = this.options.CustomOptions['removeLonelyOn'];
+
+        try {
+            this.edgeConfiguration = JSON.parse(this.options.CustomOptions['edgeColor']);
+            this.getOption('edgeTypeToSelect','edgeTypeToSelect',',');     
+            this.getOption('assignEdge','assignEdge','#',','); 
+        } catch (e) {
+            this.edgeConfiguration = {};
+        }
+
+
+        this.wiggle = true;
+        this.CDSNodesOption = true;
+        this.CDSFilterOption = true;
+        this.physics = true;
+        this.nodeOptions = {
+            "CDSFilterOption": this.CDSFilterOption,
+            "CDSNodesOption": this.CDSNodesOption
+        };
+
+    };
+
+
+
+    cwApi.cwLayouts.cwLayoutNetwork = cwLayoutNetwork;
+}(cwAPI, jQuery));

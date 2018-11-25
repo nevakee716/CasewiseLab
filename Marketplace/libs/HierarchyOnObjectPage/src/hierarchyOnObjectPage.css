@@ -1,0 +1,40 @@
+div.page-title div {
+    display : inline-flex;
+    font-size : 15px !important;
+}
+
+div.page-title {
+    font-size : 20px !important;
+}
+
+
+div.page-title div div{
+    display : block;
+    cursor: pointer;
+}
+
+div.page-title div div a {
+    display : block;
+}
+
+div.page-title div.breadCrumbHierarchyMultipleElementListHidden{
+    display: none;
+    position: absolute;
+}
+
+div.page-title div.breadCrumbHierarchyMultipleElementListVisible {
+	display: block;
+    visibility: visible;
+    background-color: #ECEFF1;
+    box-shadow: 1px 3px 3px #BDBDBD;
+    position: absolute;
+}
+
+div.page-title a.HierarchyLink {
+    font-size: 12px;
+}
+
+div.page-title a.historyHierarchyLink {
+	color: red;
+}
+

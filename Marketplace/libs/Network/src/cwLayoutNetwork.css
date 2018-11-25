@@ -1,0 +1,36 @@
+.bootstrap-select.btn-group:not(.input-group-btn),
+.bootstrap-select.btn-group[class*="span"] {
+  margin: 0 !important;
+}
+.cwLayoutNetwork {
+  display: block;
+  width: 100%;
+}
+
+div.cwLayoutNetworkLegend {
+	display:flex;
+	width:80%
+}
+div.LayoutNetork_filterSection {
+	display:flex;
+}
+
+div.LayoutNetork_filterGroup {
+	display:block;
+}
+
+div.LayoutNetork_filterGroup div{
+	display:flex;
+	flex-wrap: wrap;
+}
+
+div.cwLayoutNetworkLegend i{
+	font-size: 1rem;
+}
+
+.cwLayoutNetwork img.networkLegendImage {
+	    height: 25px;
+    top: 3px;
+    position: absolute;
+    right: 25px;
+}

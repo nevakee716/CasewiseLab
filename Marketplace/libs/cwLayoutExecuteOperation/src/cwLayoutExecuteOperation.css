@@ -1,0 +1,20 @@
+div.execute-operation-container {
+  display: inline-block;
+  margin: 0px 10px;
+}
+div.execute-operation-container button.execute-operation-button {
+  border-radius: 4px;
+}
+div.execute-operation-container div.execute-operation-result {
+  display: inline-block;
+  margin: 0px 10px;
+}
+div.execute-operation-container div.execute-operation-result i.fa-check {
+  color: #3cb371;
+}
+div.execute-operation-container div.execute-operation-result i.fa-times {
+  color: #ff0000;
+}
+div.execute-operation-container div.execute-operation-result span.execute-operation-result-message-error {
+  margin-left: 10px;
+}

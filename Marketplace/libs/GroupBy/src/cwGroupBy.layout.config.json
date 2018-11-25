@@ -1,0 +1,22 @@
+{
+    "Name": "groupby",
+    "DisplayName": "Group By",
+    "Description": "Simple ul/li list with div/a container for the name",
+    "JavaScriptClassName": "cwGroupBy",
+    "Options": [{
+        "Id": "group-by-alphabel",
+        "DisplayName": "Group by Alphabet",
+        "Description": "Group the list by alphabet",
+        "Type": 1
+    }, {
+        "Id": "group-by-property",
+        "DisplayName": "Or Group by Property",
+        "Description": "Group the list by property value ",
+        "Type": 0
+    }, {
+        "Id": "both-levels-expandable",
+        "DisplayName": "Both levels are expandable",
+        "Description": "While adding the accordion, both levels are expandables, if it's not checked, only the root level is expandable. ",
+        "Type": 1
+    }]
+}

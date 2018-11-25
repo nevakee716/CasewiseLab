@@ -1,0 +1,22 @@
+.cw-ammap svg path {
+  stroke: #FFFFFF !important;
+}
+.cw-ammap svg g.amcharts-pan-home circle,
+.cw-ammap svg g.amcharts-zoom-in circle,
+.cw-ammap svg g.amcharts-zoom-out circle {
+  stroke: #FFFFFF;
+  r: 15.5;
+}
+.cw-ammap svg g.amcharts-pan-home path,
+.cw-ammap svg g.amcharts-zoom-in path,
+.cw-ammap svg g.amcharts-zoom-out path {
+  fill: #FFFFFF;
+}
+.cw-ammap svg g.amcharts-pan-home circle:hover,
+.cw-ammap svg g.amcharts-zoom-in circle:hover,
+.cw-ammap svg g.amcharts-zoom-out circle:hover {
+  fill: #4DB6AC;
+}
+.cw-ammap svg circle {
+  r: 12;
+}

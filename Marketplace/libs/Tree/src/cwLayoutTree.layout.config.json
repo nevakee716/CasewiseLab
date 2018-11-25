@@ -1,0 +1,19 @@
+{
+    "Name": "Tree",
+    "DisplayName": "Tree",
+    "Description": "Allow you to display your association in a Tree Map",
+    "JavaScriptClassName": "cwLayoutTree",
+    "Options": [
+    {
+        "Id": "hidden-nodes",
+        "DisplayName": "Hidden Nodes",
+        "Description": "Use comma as splitter character",
+        "Type": 0
+    },
+	{
+        "Id": "popOutList",
+        "DisplayName": "popOut List",
+        "Description": "list the scriptname of the objectType and the popOut",
+        "Type": 0
+    }]
+}

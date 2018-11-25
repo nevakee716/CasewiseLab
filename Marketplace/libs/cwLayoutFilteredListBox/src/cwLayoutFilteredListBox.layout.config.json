@@ -1,0 +1,12 @@
+{
+	"Name" : "filtered-list-box", 
+	"DisplayName" : "Filtered List Box", 
+	"Description" : "The Simple ul/li list with div/a container for the name is surrounded by a div with the name of the Object Node",
+	"JavaScriptClassName"  : "cwLayoutFilteredListBox",
+	"Options": [{
+		"Id": "filtered-view",
+		"DisplayName":"Use data from view",
+		"Description":"Set the name of the view you want to use data from",
+		"Type": 0
+	}]
+}

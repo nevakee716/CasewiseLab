@@ -1,0 +1,26 @@
+@import "../../_mixins";
+@import "../../_variables";
+
+.cw-ammap{
+	svg {
+		path{
+			stroke: @cwBodyBackgroundColor !important;
+		}
+		g.amcharts-pan-home, g.amcharts-zoom-in, g.amcharts-zoom-out{
+			circle {
+				stroke: @cwBodyBackgroundColor;
+				r:15.5;
+			}
+			path{
+				fill: @cwBodyBackgroundColor;
+			}
+			
+			circle:hover{
+				fill: @cwColor1
+			}
+		}
+		circle{
+			r:12;
+		}
+	}
+}
