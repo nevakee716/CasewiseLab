@@ -53,7 +53,7 @@
 
     cwPivotTable.prototype.parseNode = function(child, callback) {
         for (var associationNode in child.associations) {
-            if (child.hasOwnProperty(associationNode) && child[associationNode] !== null) {
+            if (child.associations.hasOwnProperty(associationNode) && child.associations[associationNode] !== null) {
                 for (var i = 0; i < child.associations[associationNode].length; i += 1) {
                     var nextChild = child.associations[associationNode][i];
                     callback(nextChild, associationNode);
