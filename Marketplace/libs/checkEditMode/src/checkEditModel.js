@@ -20,16 +20,32 @@
         associations: {}
       },
       flux : {
+        automaticProperty: {name: "{libéllé} (<§application_20005_994692143§>=><§application_20006_430592262§>)"},
+        uniqueProperty: {},
+        associations: {
+          application_20005_994692143:{min: 1, max: 1},
+          application_20006_430592262:{min: 1, max: 1}
+        }
+      },
+      z_flux_creation_from : {
         automaticProperty: {
-          name: "{libéllé} (<§application_20005_994692143§>=><§application_20006_430592262§>)",
+          name: "{libéllé} (<§flux_20005_667676674§>=><§application_20006_2090858594§>)",
         },
         uniqueProperty: {},
         associations: {
-          application_20005_994692143: {
+          application_20006_2090858594: {
             min: 1,
             max: 1
-          },
-          application_20006_430592262: {
+          }
+        }      
+      } ,
+      z_flux_creation_to : {
+        automaticProperty: {
+          name: "{libéllé} (<§application_20005_1005309959§>=><§flux_20006_2055139330§>)",
+        },
+        uniqueProperty: {},
+        associations: {
+          application_20005_1005309959: {
             min: 1,
             max: 1
           }
@@ -38,10 +54,8 @@
     };
   }
 
-
   cwApi.CwMandatoryValueChange.prototype.checkMandatoryValues = function() {
     var config,view = cwAPI.getCurrentView();
-
     if(view && globalConfig[view.cwView]) {
       config = globalConfig[view.cwView];
       this.modifyAutomaticProperty(config);
@@ -60,7 +74,10 @@
     if (config.automaticProperty) {
       for (propertyScriptName in config.automaticProperty) {
         if (config.automaticProperty.hasOwnProperty(propertyScriptName)) {
-          if (this.sourceObject.properties[propertyScriptName] === undefined) {
+          let prop = cwAPI.mm.getProperty(cwAPI.getCurrentView().rootObjectType,propertyScriptName);
+          if ((this.sourceObject.properties[propertyScriptName] === undefined  || this.sourceObject.properties[propertyScriptName] === "") && prop) {
+            this.sourceObject.displayNames[propertyScriptName] = prop.name + " " + $.i18n.prop('editmode_Automatique'); 
+            this.pendingObject.displayNames[propertyScriptName] = prop.name + " " + $.i18n.prop('editmode_Automatique');
             this.sourceObject.properties[propertyScriptName] = "";
           }
           this.pendingObject.properties[propertyScriptName] = this.getDisplayString(config.automaticProperty[propertyScriptName]);
@@ -72,12 +89,26 @@
 
   cwApi.CwMandatoryValueChange.prototype.getDisplayString = function(cds) {
 
-    var prop, assoNodeID, splitPart, splitPart2, targetObjPropScriptname;
+    var assoCDSPart,pages = {},cdsP,name, prop, assoNodeID, splitPart, splitPart2, targetObjPropScriptname;
     while (cds.indexOf('<§') !== -1 && cds.indexOf('§>') !== -1) {
-      assoNodeID = cds.split("<§")[1].split("§>")[0];
+      cdsP = false;
+      assoCDSPart = cds.split("<§")[1].split("§>")[0];
+      if(assoCDSPart.indexOf(".") !== -1) {
+        var propertyToGet,url;
+        propertyToGet = assoCDSPart.split(".")[1];
+        url = propertyToGet.split("(")[1];
+        url = url.replace(")","");
+        propertyToGet = propertyToGet.split("(")[0];
 
+        assoNodeID = assoCDSPart.split(".")[0];
+      } else assoNodeID = assoCDSPart; 
       if (this.pendingObject.associations[assoNodeID] && this.pendingObject.associations[assoNodeID].items.length > 0) {
-        cds = cds.replace('<§' + assoNodeID + '§>', this.pendingObject.associations[assoNodeID].items[0].name);
+        if(propertyToGet) {
+          name = this.getPropertyFromObjectPage(propertyToGet,url,pages,this.pendingObject.associations[assoNodeID].items[0].targetObjectID);
+        } else {
+          name = this.pendingObject.associations[assoNodeID].items[0].name;
+        }
+        cds = cds.replace('<§' + assoCDSPart + '§>', name);
       } else break;
     };
 
@@ -96,7 +127,7 @@
 
   cwApi.CwMandatoryValueChange.prototype.addEmptyMandatoryPropertiesToList = function(propertyValue, propertyType) {
     if (this.isPropertyEmpty(propertyValue, propertyType.type)) {
-      this.emptyMandatoryProperties.push(propertyType.name + " : Propriété Sans Valeur");
+      this.emptyMandatoryProperties.push(propertyType.name + " : " + $.i18n.prop('checkeditmode_propertywihtoutvalue'));
     }
   };
 
@@ -111,7 +142,7 @@
           propertyType = cwApi.mm.getProperty(this.objectTypeScriptName, propertyScriptName);
 
           if (this.checkPropertyUnicity(propertyScriptName, config.uniqueProperty[propertyScriptName], pages) === false) {
-            this.emptyMandatoryProperties.push(propertyType.name + " : La valeur n'est pas unique");
+            this.emptyMandatoryProperties.push(propertyType.name + " : " + $.i18n.prop('checkeditmode_notuniquevalue'));
             this.pendingObject.mandatory[propertyScriptName] = true;
           } else {
             this.pendingObject.mandatory[propertyScriptName] = false;
@@ -120,6 +151,40 @@
         }
       }
     }
+  };
+
+
+
+   cwApi.CwMandatoryValueChange.prototype.getPropertyFromObjectPage = function(propertyScriptName, objectPage, pages,id) {
+
+    function getQueryStringValue(key) {
+      return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+    };
+
+    var o, n, reqEnd = true;
+    if (pages.objectPage === undefined) pages[objectPage] = {};
+    if (pages[objectPage][id] === undefined) {
+      reqEnd = false;
+      var url = cwApi.getLiveServerURL() + "page/" + objectPage + "/" + id + '?' + Math.random();
+
+      var request = new XMLHttpRequest();
+      request.open('GET', url, false); // `false` makes the request synchronous
+      request.send(null);
+
+      if (request.status === 200 && status != "Ko") {
+        try {
+          pages[objectPage][id] = JSON.parse(request.responseText);      
+        } catch (e) {
+          cwAPI.notificationManager.addError(e.message);
+          return null;
+        }
+      } else return null;
+    }
+
+    if(pages[objectPage][id].object && pages[objectPage][id].object.properties && pages[objectPage][id].object.properties[propertyScriptName]) return pages[objectPage][id].object.properties[propertyScriptName];
+
+    return null;
+
   };
 
 
@@ -152,7 +217,7 @@
     for (n in pages[indexPage]) {
       if (pages[indexPage].hasOwnProperty(n)) {
         for (var i = 0; i < pages[indexPage][n].length; i++) {
-          if (this.pendingObject.properties[propertyScriptName] === pages[indexPage][n][i].properties[propertyScriptName]) {
+          if (this.pendingObject.properties[propertyScriptName].toLowerCase() === pages[indexPage][n][i].properties[propertyScriptName].toLowerCase()) {
             if (pages[indexPage][n][i].object_id.toString() !== cwApi.cwPageManager.getQueryString().cwid) {
               return false;
             }
@@ -160,7 +225,6 @@
         }
       }
     }
-
     return true;
 
   };
@@ -179,8 +243,8 @@
           var associationType = cwApi.getAssociationType(n);
           this.pendingObject.associations[n].isMandatory = true;
           var message;
-          if (c.min && l < c.min) message = l + " objets associés minimum : " + c.min;
-          if (c.max && l > c.max) message = l + " objets associés maximum : " + c.max;
+          if (c.min && l < c.min) message = l + " " + $.i18n.prop('checkeditmode_minimunassociatedobjects') + " " + c.min; 
+          if (c.max && l > c.max) message = l + " " + $.i18n.prop('checkeditmode_maximumassociatedobjects') + " " + c.max;
           this.emptyMandatoryAssociations.push(associationType.displayNodeName + " : " + message);
 
         }
