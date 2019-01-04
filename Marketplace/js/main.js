@@ -109,6 +109,48 @@
     };
 
 
+    cwCustomerSiteActions.gaTrackerIndex = function(rootNode) {
+        var piwikTracker,currentView,cwView;
+        currentView = cwAPI.getCurrentView();
+        if (currentView) cwView = currentView.name;
+        else cwView = "unknown";
+        if(ga) {
+            try {
+                if(cwApi.customLibs.gaTracker === undefined) {
+                    ga('create', 'UA-131235116-1', 'auto');
+                    cwApi.customLibs.gaTracker = true;
+                }
+
+                ga('send', 'pageview',cwView);
+            } catch(e) {
+                console.log(e);
+            }
+        }
+    };
+
+    cwCustomerSiteActions.gaTrackerSingle = function(rootNode) {
+        var piwikTracker,currentView,cwView;
+        currentView = cwAPI.getCurrentView();
+        if (currentView) cwView = currentView.cwView;
+        else cwView = "unknown";
+        if(ga) {
+            try {
+                if(cwApi.customLibs.gaTracker === undefined) {
+                    console.log(ga('create', 'UA-131235116-1', 'auto'));
+                    cwApi.customLibs.gaTracker = true;
+                }
+                console.log(ga('send', 'pageview',cwAPI.mm.getObjectType(rootNode.objectTypeScriptName).name + " / " + rootNode.properties.name.replace("/","-")));
+                ga('send',"186884448");
+            } catch(e) {
+                console.log(e);
+            }
+        }
+    };
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 
     /********************************************************************************
@@ -127,6 +169,9 @@
     cwAPI.customLibs.doActionForSingle.hideEmptyMenu = hideEmptyMenu;
     cwAPI.customLibs.doActionForIndex.piwik = cwCustomerSiteActions.piwikTrackerIndex; 
     cwAPI.customLibs.doActionForSingle.piwik = cwCustomerSiteActions.piwikTrackerSingle;
+    cwAPI.customLibs.doActionForIndex.ga = cwCustomerSiteActions.gaTrackerIndex; 
+    cwAPI.customLibs.doActionForSingle.ga = cwCustomerSiteActions.gaTrackerSingle;
+
 
 }(cwAPI, jQuery));
 
