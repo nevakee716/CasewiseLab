@@ -172,6 +172,8 @@
         pageSizes: TableComplexeEnhancedConfig.itemPerPages,
         buttonCount: 5
       },
+      page: tableComplexeEnhanced.cwKendoGrid.enablePopoutButton,
+      filter : tableComplexeEnhanced.cwKendoGrid.enablePopoutButton,
       edit: this.editEvent.bind(this),
       scrollable: true,
       sortable: true,
@@ -320,7 +322,10 @@
   };
 
   tableComplexeEnhanced.cwKendoGrid.enablePopoutButton = function(container) {
-    $('.k-grid-popoutitem').click(this.openPopOut.bind(this));
+    $('.k-grid-popoutitem').off('click');
+    setTimeout(function () {
+      $('.k-grid-popoutitem').on('click',tableComplexeEnhanced.cwKendoGrid.openPopOut);
+    },500);
   };
 
   tableComplexeEnhanced.cwKendoGrid.openPopOut = function(e) {
@@ -382,7 +387,7 @@
         output.push(cwApi.cwKendoGridButtons.getDeleteButton());
       }
       if (TableComplexeEnhancedConfig.popOut && e.item && e.item.nodeID) {
-        if(TableComplexeEnhancedConfig.hasOwnProperty(e.item.nodeID) && TableComplexeEnhancedConfig[e.item.nodeID].popOutName )
+        if(TableComplexeEnhancedConfig.hasOwnProperty(e.item.nodeID) && TableComplexeEnhancedConfig[e.item.nodeID].popOutName)
           popOutName = cwApi.replaceSpecialCharacters(TableComplexeEnhancedConfig[e.item.nodeID].popOutName );
         else {
           popOutName = cwApi.replaceSpecialCharacters(e.item.objectTypeScriptName) + "_diagram_popout";
@@ -436,6 +441,8 @@
   };
 
 
+
+
   if (cwBehaviours.hasOwnProperty('CwKendoGrid') && cwBehaviours.CwKendoGrid.prototype.setAnGetKendoGridData) {
     cwBehaviours.CwKendoGrid.prototype.setAnGetKendoGridData = tableComplexeEnhanced.cwKendoGrid.setAnGetKendoGridData;
     cwBehaviours.CwKendoGrid.enableClearFilter = tableComplexeEnhanced.cwKendoGrid.enableClearFilter;
@@ -450,6 +457,7 @@
     cwAPI.CwKendoGridToolBar.prototype.varifyAndAppendClearFilterButton = tableComplexeEnhanced.cwKendoGridToolBar.varifyAndAppendClearFilterButton;
     cwAPI.CwKendoGridToolBar.prototype.getClearFilterButton = tableComplexeEnhanced.cwKendoGridToolBar.getClearFilterButton;
   }
+
 
   if (cwBehaviours.CwKendoGridData) {
     cwBehaviours.CwKendoGridData.prototype.editTemplate = tableComplexeEnhanced.cwKendoGridData.editTemplate;
