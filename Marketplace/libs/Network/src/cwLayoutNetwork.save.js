@@ -28,7 +28,7 @@
             this.networkConfiguration.nodes[node.object_id].label = node.properties[this.definition.capinetworkLabelScriptname];
             this.networkConfiguration.nodes[node.object_id].configuration = JSON.parse(node.properties.configuration.replaceAll("\\", ""));
             this.networkConfiguration.nodes[node.object_id].obj = node;
-            if(!cwAPI.isIndexPage()) {
+            if (!cwAPI.isIndexPage()) {
                 node.associations = {};
                 node.associations[this.nodeID] = {};
                 node.associations[this.nodeID].associationScriptName = this.definition.capinetworkToAnyAssociationScriptname;
@@ -43,8 +43,8 @@
         newItem.targetObjectID = father.object_id;
         newItem.isNew = "false";
         newItem.targetObjectTypeScriptName = father.objectTypeScriptName;
-        if(!cwAPI.isIndexPage()) this.networkConfiguration.nodes[node.object_id].obj.associations[this.nodeID].items.push(newItem);
-        
+        if (!cwAPI.isIndexPage()) this.networkConfiguration.nodes[node.object_id].obj.associations[this.nodeID].items.push(newItem);
+
 
     };
 
@@ -68,14 +68,32 @@
         object.textContent = "None";
         filterObject.appendChild(object);
 
+
+        var array = [];
         for (id in this.networkConfiguration.nodes) {
             if (this.networkConfiguration.nodes.hasOwnProperty(id)) {
-                object = document.createElement("option");
-                object.setAttribute('id', id);
-                object.textContent = this.networkConfiguration.nodes[id].label;
-                filterObject.appendChild(object);
+                var element = {};
+                element.id = id;
+                element.label = this.networkConfiguration.nodes[id].label;
+                array.push(element);
             }
         }
+        array.sort(function(a, b) {
+            var nameA = a.label.toLowerCase(),
+                nameB = b.label.toLowerCase();
+            if (nameA < nameB) //sort string ascending
+                return -1;
+            if (nameA > nameB)
+                return 1;
+            return 0; //default return value (no sorting)
+        });
+
+        array.forEach(function(element) {
+            object = document.createElement("option");
+            object.setAttribute('id', element.id);
+            object.textContent = element.label;
+            filterObject.appendChild(object);
+        });
 
         return filterObject;
     };
@@ -140,7 +158,7 @@
 
 
 
-    cwLayoutNetwork.prototype.getConfigurationAndAssociationObjectToNetwork = function(newObj,networkLabel) {
+    cwLayoutNetwork.prototype.getConfigurationAndAssociationObjectToNetwork = function(newObj, networkLabel) {
 
         var linkTypeLabels, nodes, config, positions, newAssoItems = [],
             newAssoItemsObj = {},
@@ -171,9 +189,12 @@
         config.camera.position = this.networkUI.getViewPosition();
         config.camera.scale = this.networkUI.getScale();
 
+
+        config.physics = this.networkUI.physics.options;
+
         positions = this.networkUI.getPositions();
 
-        if(!cwAPI.isIndexPage()) {
+        if (!cwAPI.isIndexPage()) {
             if (newObj.associations) {
                 newObj.associations[this.nodeID].items.forEach(function(item) {
                     newAssoItemsObj[item.targetObjectID + item.targetObjectTypeScriptName] = item;
@@ -208,8 +229,21 @@
         });
 
         config.fullGroups = this.network.getFullGroups();
+
+        config.options = {};
+        config.options.directionListString = this.directionListString;
+        config.options.newNodeFilteredString = this.newNodeFilteredString;
+        config.options.specificGroupString = this.specificGroupString;
+        config.options.hiddenNodesString = this.hiddenNodesString;
+        config.options.duplicateNodesString = this.duplicateNodesString;
+        config.options.complementaryNodesString = this.complementaryNodesString;
+        config.options.duplicateNodesString = this.duplicateNodesString;
+        config.options.groupString = this.groupString;
+
+
+
         newObj.properties[this.definition.capinetworkConfigurationScriptname] = JSON.stringify(config);
-        
+
 
         var view = cwAPI.getCurrentView();
         if (view && view.cwView) {
@@ -217,10 +251,10 @@
         }
 
         newObj.properties[this.definition.capinetworkCreateOnViewScriptname] = view + "." + this.nodeID;
-      
+
         newObj.properties[this.definition.capinetworkLabelScriptname] = networkLabel;
- 
-        newObj.properties["name"] = view + "." + this.nodeID + " => " + networkLabel;   
+
+        newObj.properties["name"] = view + "." + this.nodeID + " => " + networkLabel;
 
 
         return config;
@@ -250,7 +284,7 @@
         var self = this;
         var config;
         newObj.properties = {};
-        config = this.getConfigurationAndAssociationObjectToNetwork(newObj,networkName);
+        config = this.getConfigurationAndAssociationObjectToNetwork(newObj, networkName);
         var asso = $.extend(true, {}, newObj.associations);
         newObj.associations = {};
         newNewObj = $.extend(true, {}, newObj);
@@ -261,29 +295,39 @@
                 newObj.associations[self.nodeID] = {};
                 newObj.associations[self.nodeID].items = [];
                 newObj.associations[self.nodeID].associationScriptName = self.definition.capinetworkToAnyAssociationScriptname;
-
                 newObj.object_id = elem.id;
-                newNewObj.object_id = elem.id;
-                cwAPI.CwEditSave.setPopoutContentForGrid(cwApi.CwPendingChangeset.ActionType.Update, newObj, newNewObj, newObj.object_id, self.definition.capinetworkScriptname, function(response) {
-                    if (!cwApi.statusIsKo(response)) {
-                        self.createdSaveObjFromReponse(newNewObj, response, networkName, config);
 
-                        var html = '<option id="' + response.id + '">' + networkName + '</>';
-                        $('.selectNetworkConfiguration_' + self.nodeID).append(html)
-                            .selectpicker("refresh");
 
-                        $("div.selectNetworkConfiguration_" + self.nodeID + " > option").remove();
-                        $('.selectNetworkConfiguration_' + self.nodeID).val(networkName).selectpicker("refresh");
-
-                    }
-                });
+                if (cwApi.isIndexPage()) {
+                    self.networkConfiguration.nodes[elem.id] = {};
+                    self.networkConfiguration.nodes[elem.id].obj = newObj;
+                    self.networkConfiguration.nodes[elem.id].label = networkName;
+                    self.networkConfiguration.nodes[elem.id].configuration = config;
+                    self.networkConfiguration.selected = self.networkConfiguration.nodes[elem.id];
+                    self.addNetworkInFilter(elem.id, networkName);
+                } else {
+                    newNewObj.object_id = elem.id;
+                    cwAPI.CwEditSave.setPopoutContentForGrid(cwApi.CwPendingChangeset.ActionType.Update, newObj, newNewObj, newObj.object_id, self.definition.capinetworkScriptname, function(response) {
+                        if (!cwApi.statusIsKo(response)) {
+                            self.createdSaveObjFromReponse(newNewObj, response, networkName, config);
+                            self.addNetworkInFilter(response.id, networkName);
+                        }
+                    });
+                }
             }
-
-
         });
 
     };
 
+    cwLayoutNetwork.prototype.addNetworkInFilter = function(object_id, networkName) {
+        var html = '<option id="' + object_id + '">' + networkName + '</>';
+        $('.selectNetworkConfiguration_' + this.nodeID).append(html)
+            .selectpicker("refresh");
+
+        $("div.selectNetworkConfiguration_" + this.nodeID + " > option").remove();
+        $('.selectNetworkConfiguration_' + this.nodeID).val(networkName).selectpicker("refresh");
+
+    };
     cwLayoutNetwork.prototype.createdSaveObjFromReponse = function(obj, response, networkName, config) {
         var r, self = this;
 
@@ -310,10 +354,10 @@
                 });
             }
         }
-        if(!cwAPI.isIndexPage()) {
+        if (!cwAPI.isIndexPage()) {
             obj.associations[this.nodeID].associationScriptName = this.definition.capinetworkToAnyAssociationScriptname;
             obj.associations[this.nodeID].displayName = this.definition.capinetworkToAnyAssociationDisplayName;
-            obj.associations[this.nodeID].nodeID = self.nodeID;            
+            obj.associations[this.nodeID].nodeID = self.nodeID;
         }
 
 
@@ -330,7 +374,7 @@
         changeset = new cwApi.CwPendingChangeset(oldObj.objectTypeScriptName, oldObj.object_id, oldObj.name, true, 1);
         newObj = $.extend(true, {}, oldObj);
 
-        config = this.getConfigurationAndAssociationObjectToNetwork(newObj,oldObj.properties[this.definition.capinetworkLabelScriptname]);
+        config = this.getConfigurationAndAssociationObjectToNetwork(newObj, oldObj.properties[this.definition.capinetworkLabelScriptname]);
         //changeset.compareAndAddChanges(oldObj, newObj);
 
         cwAPI.CwEditSave.setPopoutContentForGrid(cwApi.CwPendingChangeset.ActionType.Update, oldObj, newObj, oldObj.object_id, oldObj.objectTypeScriptName, function(response) {
@@ -362,10 +406,61 @@
 
     cwLayoutNetwork.prototype.loadCwApiNetwork = function(config) {
 
+
+        var selectedNetwork = this.networkConfiguration.selected;
         // unselect everything and disable physics
         this.setExternalFilterToNone();
+        this.disableGroupClusters();
         this.deActivateAllGroup();
         this.networkOptions.physics.enabled = false;
+
+
+        // load options
+
+        if (config.options) {
+            if (config.options.groupString === undefined) config.options.groupString = this.originalOptions.groupString;
+            if (config.options.directionListString === undefined) config.options.directionListString = this.originalOptions.directionListString;
+            if (config.options.newNodeFilteredString === undefined) config.options.newNodeFilteredString = this.originalOptions.newNodeFilteredString;
+            if (config.options.specificGroupString === undefined) config.options.specificGroupString = this.originalOptions.specificGroupString;
+            if (config.options.hiddenNodesString === undefined) config.options.hiddenNodesString = this.originalOptions.hiddenNodesString;
+            if (config.options.duplicateNodesString === undefined) config.options.duplicateNodesString = this.originalOptions.duplicateNodesString;
+            if (config.options.complementaryNodesString === undefined) config.options.complementaryNodesString = this.originalOptions.complementaryNodesString;
+            
+            this.groupString = config.options.groupString;
+            this.options.CustomOptions['iconGroup'] = config.options.groupString;
+            this.getFontAwesomeList(config.options.groupString);
+            
+            this.externalFilters = {};
+            this.nodeFiltered = {};
+            this.getdirectionList(config.options.directionListString);
+            this.options.CustomOptions['arrowDirection'] = config.options.directionListString;
+            this.directionListString = config.options.directionListString;
+            
+            this.getExternalFilterNodes(config.options.newNodeFilteredString);
+            this.options.CustomOptions['filterNode'] = config.options.newNodeFilteredString;
+            this.newNodeFilteredString = config.options.newNodeFilteredString;
+            
+            this.specificGroupString = config.options.specificGroupString;
+            this.options.CustomOptions['specificGroup'] = config.options.specificGroupString;
+            this.getOption('specificGroup', 'specificGroup', '#', ',');
+            
+            this.hiddenNodesString = config.options.hiddenNodesString;
+            this.options.CustomOptions['hidden-nodes'] = config.options.hiddenNodesString;
+            this.getOption('hidden-nodes', 'hiddenNodes', ',');
+            
+            this.duplicateNodesString = config.options.duplicateNodesString;
+            this.options.CustomOptions['duplicateNodes'] = config.options.duplicateNodesString;
+            this.getOption('duplicateNodes', 'duplicateNode', ',');
+
+            this.complementaryNodesString = config.options.complementaryNodesString;
+            this.options.CustomOptions['complementaryNode'] = config.options.complementaryNodesString;
+            this.getOption('complementaryNode', 'complementaryNode', ',');
+            
+            this.updateNetworkData();
+        }
+
+
+
         this.hideAllEdgesByScriptname();
 
         // load links
@@ -375,6 +470,7 @@
         this.network.updateDisposition(config);
 
         var changeSet = this.network.getEnabledVisNodes();
+        if(this.nodes && this.nodes.clear) this.nodes.clear();
         this.nodes.add(changeSet);
         this.fillFilter(changeSet);
 
@@ -396,9 +492,14 @@
         this.colorAllEdges();
 
         // clusters
-        this.fillValueInClusterFilter(config.clusterByGroupOption.head, config.clusterByGroupOption.child);
-        this.clusterByGroup();
-        this.activateClusterEvent();
+        if (this.clusterOption) {
+            this.clusterByGroupOption.head = config.clusterByGroupOption.head;
+            this.clusterByGroupOption.child = config.clusterByGroupOption.child;
+            this.fillValueInClusterFilter(config.clusterByGroupOption.head, config.clusterByGroupOption.child);
+            this.clusterByGroup();
+            this.activateClusterEvent();
+        }
+
 
         // external filters
         this.updateExternalFilterInformation(config.external);
@@ -409,6 +510,18 @@
             scale: config.camera.scale,
             animation: true
         });
+
+        if (config.physics) this.networkUI.physics.options = config.physics;
+        this.networkUI.setOptions(this.networkUI.options);
+
+        if(selectedNetwork) {
+            this.networkConfiguration.selected = selectedNetwork;
+            $('select.selectNetworkConfiguration_' + this.nodeID).each(function( index ) { // put values into filters
+                $(this).selectpicker('val',selectedNetwork.label ); //init cwAPInetworkfilter
+            });           
+        }
+
+
     };
 
 

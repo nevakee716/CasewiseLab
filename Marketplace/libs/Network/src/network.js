@@ -61,9 +61,9 @@
             elements.forEach(function(elem) {
                 if (elem) {
                     elem.name.replaceAll("\n", " ");
-                    hasChanged = that.objectTypeNodes[elem.group].changeState(elem.object_id, state);
+                    hasChanged = that.objectTypeNodes[elem.group].changeState(elem.id, state);
                     if (hasChanged) { // on check si le node est pas déja présent dans le réseau
-                        changeSet = changeSet.concat(that.getVisNode(elem.object_id, elem.group));
+                        changeSet = changeSet.concat(that.getVisNode(elem.id, elem.group));
                     }
                 }
             });
@@ -77,7 +77,7 @@
         var visData = [];
         for (objectType in this.objectTypeNodes) {
             if (this.objectTypeNodes.hasOwnProperty(objectType)) {
-                visData = visData.concat(this.objectTypeNodes[objectType].getVisData());
+                visData = visData.concat(this.objectTypeNodes[objectType].getAllVisData());
             }
         }
         return visData;
@@ -133,6 +133,18 @@
         } catch (e) {
             console.log(e);
         }
+    };
+
+
+    network.prototype.setNodesFromChangeset = function(changeSet,value) {
+        var self = this;
+        if(value === undefined) value = true;
+
+        changeSet.forEach(function(n){
+            if (self.objectTypeNodes[n.group] && self.objectTypeNodes[n.group].nodes[n.id]) {
+                self.objectTypeNodes[n.group].nodes[n.id].setStatus(value);
+            }
+        });
     };
 
     network.prototype.getFullGroups = function() {

@@ -1,10 +1,14 @@
 | **Name** | **cwLayoutNetwork** | **Version** | 
 | --- | --- | --- |
-| **Updated by** | Mathias PFAUWADEL | 5.0 |
+| **Updated by** | Mathias PFAUWADEL | 6.2 |
 
 
 ## Patch Notes
 
+* 6.2 : Can save to png very big network
+* 6.1 : Adding Contextual Filter for objectPage 
+* 6.0 : Allow Duplicate item, Changing saving system (not compatible with 5.0 capinetwork)
+* 5.1 : Traduction Menu
 * 5.0 : Adding Image, Save, Link Type
 * 4.1 : Can now select multiple element in externalFilter
 * 4.0 : Cluster, Download Image, display association custom display string
@@ -24,8 +28,11 @@
 ## To be Done
 
 * More Options
-* Add Translations i18n like Data/Common/i18n
+* Edition
 
+## Attention 
+
+Since 6.1, you need https://github.com/nevakee716/Utils/wiki to be installed
 
 ## Description 
 Allow you to display objects and their associations in a network. The layout provide the same interaction than diagram, simple click for popOUT and double click to go on the objectPage. This layout can be use on IndexPage of ObjectPage.
@@ -69,7 +76,9 @@ List the popOut that you want to be used. (ex:scriptname1,popOutName1#scriptname
 Group are the different filter box of the network, by default object are sort in to different group by ObjectType(name of the group is the name of the objectype).
 If you want objects of a node to be in a different group use this option : NodeID,GroupName#NodeID2,GroupName2#(ex:processus_niveau_3_20004_410243396,Processus Electronique#processus_niveau_3_20004_2025026472,Processus Informatique)
 
-PS : If an object is present twice in the JSON object, one time in a group and one time in another group, it will only appear in the first group. So if you need to have different icon according to category or other, define all your node for them with filter and add a 3rd node after with all the objet without filter.
+PS : If an object is present twice in the JSON object, one time in a group and one time in another group, it will only appear in the first group. So if you need to have different icon according to category or other, define all your node for them with filter and add a 3rd node after with all the objet without filter. 
+
+Be carefull when using the complementary node, the node will be place in the order of the complementary node and always after the regular node.
 
 ### Group To Select On Start
 
@@ -90,6 +99,8 @@ You can mix Icon and shape like that :
 Flux,icon,f0ec,#FF8C00||Application,icon,f10a,#4F90C1||Entité,box,#FF8C00,#4F90C1
 
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/4.png" alt="Drawing" style="width: 95%;"/>
+
+You can assign specific icon and color to item if you don't have group shape, just need to use a property with scriptname icon and color and check it in evolve designer
 
 ### Arrow Direction :
 
@@ -119,6 +130,12 @@ This option will define the way your action(add close node, add connected node..
 add : this will add the selected node to your network
 highlight : this will highlight the selected node
 absolute : this will only display the selected node
+
+### Contextual Node ID :
+
+If you want object to be associated to your objectPage object, use this option like that : 
+<img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/Contextual.png" alt="Drawing" style="width: 95%;"/>
+Here in the node Emet Flux Admin, only the flow that are associated to my applications of my objects page will be display, others will be deleted
 
 ### Complementary Node :
 
@@ -161,15 +178,15 @@ Activate the option to remove lonely object. When you click on the button, it wi
 
 ### Enable Edit
 
-You can load network disposition (node position, link selected, cluster, external filter ...)
-Contributor only can save or create a network disposition. 
+You can load capinetwork  (node position, link selected, cluster, external filter ...)
+Contributor only can save or create a capinetwork . 
 
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/networkEditionButton.jpg" alt="Drawing" style="width: 95%;"/>
 
-When you create a new network, it will create a new object and associate it with all the node present on the network layout.
+When you create a new network, it will create a new object and associate it with the object of your objectPage.
 
 To use this option you need to have your metamodel ready : 
-Create a new objectType : CW API NETWORK with 2 properties : Configuration (memoText), and Create On View (string)
+Create a new objectType : CW API NETWORK with 3 properties : Configuration (memoText), Label (string) and Create On View (string)
 Create also an association between CW API NETWORK and Any Objects
 Inside C:\Casewise\Evolve\Site\bin\webDesigner\custom\Marketplace\libs\Network\src\cwLayoutNetwork.js
 Fill theses variable with the scriptname of your model 
@@ -177,9 +194,17 @@ Fill theses variable with the scriptname of your model
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/networkScriptname.jpg" alt="Drawing" style="width: 95%;"/>
 
 Inside your evolve configuration 
-You need to add to each object this node.
+You need to put the association to capinetwork to the main object if you are on an objectPage 
+On an Indexpage, you need to add a new capinetwork node with a filter(createOnCWview = indexpage.nodeIDofTheNetworkLayout)
+(don't forget to use complementary node if needed)
 
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/networkEvolveConfig.jpg" alt="Drawing" style="width: 95%;"/>
+
+
+### Load the First Cw Api Network of the list
+
+If you check this option, the network layout will load the first capinetwork of the list
+
 
 ### Edge Color
 
@@ -215,7 +240,9 @@ In the same way, you assign group with Node, you can do that with the EdgeType
 For exemple : 
 emplacement_20196_1480647536,toto#emplacement_20196_148043224,tata
 
+### Duplicate the nodeIDS
 
+Put the ID of the node that will be duplicate, so when the network parse your json tree, if the object already exist it will create a new node.
 
 ## Focus On
 
@@ -294,6 +321,7 @@ PS : if you selected an entity, and all the node connected to the entity are not
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/ex3Config1.png" alt="Drawing" style="width: 95%;"/>
 <img src="https://raw.githubusercontent.com/nevakee716/cwNetwork/master/screen/ex3Config2.png" alt="Drawing" style="width: 95%;"/>
 
+don't forget to enable this unzip edge, cause label of the edge will be only visible if edge are unzip
 
 
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013 Casewise Systems Ltd (UK) - All rights reserved */
+﻿/* Copyright (c) 2012-2013 Casewise Systems Ltd (UK) - All rights reserved */
 
 
 
@@ -25,7 +25,7 @@
             if (cwAPI.isDebugMode() === true) {
                 if (self.network) self.createNetwork();
             } else {
-                libToLoad = ['modules/bootstrap/bootstrap.min.js', 'modules/bootstrap-select/bootstrap-select.min.js', 'modules/vis/vis.min.js', 'modules/d3/d3.min.js'];
+                libToLoad = ['modules/bootstrap/bootstrap.min.js', 'modules/bootstrap-select/bootstrap-select.min.js', 'modules/vis/vis.min.js', 'modules/d3/d3.min.js','modules/jsTree/jstree.min.js'];
                 // AsyncLoad
                 cwApi.customLibs.aSyncLayoutLoader.loadUrls(libToLoad, function(error) {
                     if (error === null) {
@@ -54,9 +54,8 @@
             document.body.appendChild(node);
         }
 
+        var self = this;
         var networkContainer = document.getElementById("cwLayoutNetworkCanva" + this.nodeID);
-        var filterContainer = document.getElementById("cwLayoutNetworkFilter" + this.nodeID);
-        var actionContainer = document.getElementById("cwLayoutNetworkAction" + this.nodeID);
         var objectTypeNodes = this.network.getObjectTypeNodes();
         var ObjectTypeNode, externalfilter;
         var i = 0;
@@ -78,30 +77,227 @@
             nodes: this.nodes,
             edges: this.edges
         };
-        var phys;
-        phys = {
-            barnesHut: {
-                springLength: 150
-            },
-            minVelocity: 0.75,
-        };
-        //phys.enabled = this.physicsOptionInitialState;
 
+        if(this.physConfiguration === undefined || this.physConfiguration === "") {
+            this.physConfiguration = {"barnesHut":{"gravitationalConstant":-26500,"springLength":150},"minVelocity":0.75};
+        }
 
         this.networkOptions = {
             groups: this.groupsArt,
-            physics: phys,
+            physics: this.physConfiguration,
             interaction: {
                 keyboard: true
-            }
+            },
         };
-
-        this.createFilterObjects(filterContainer);
-
 
 
         // Adding filter search
+        var actionContainer = document.getElementById("cwLayoutNetworkAction" + this.nodeID);
         actionContainer.insertBefore(this.network.getSearchFilterObject(this.nodeID), actionContainer.firstChild);
+        $('.selectNetworkSearch_' + this.nodeID).selectpicker();
+
+
+        this.setFilters();
+       
+
+        // Event for filter
+        // Move On a Node
+        $('select.selectNetworkSearch_' + this.nodeID).on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
+
+            var changeSet, id, nodeId, i;
+            var groupArray = {};
+            if (clickedIndex !== undefined && $(this).context.hasOwnProperty(clickedIndex)) {
+                id = $(this).context[clickedIndex]['id'];
+                id = id.replaceAll("¤"," ");
+                var options = {
+                    position: self.networkUI.getPositions()[id],
+                    scale: 2,
+                    offset: {
+                        x: 0,
+                        y: 0
+                    },
+                    animation: true // default duration is 1000ms and default easingFunction is easeInOutQuad.
+                };
+                self.networkUI.moveTo(options);
+
+                options = {
+                    "nodes": [id]
+                };
+                self.networkUI.setSelection(options);
+            }
+            $(this).selectpicker('val', "");
+        });
+
+
+        // Action for button
+        /* if(this.clusterOption) {
+            var clusterButton = document.getElementById("cwLayoutNetworkButtonsCluster" + this.nodeID); 
+            clusterButton.addEventListener('click', this.clusterByHubsize.bind(this));              
+        }*/
+
+        if (this.physicsOption && this.hidePhysicsButton === false) {
+            var physicsButton = document.getElementById("cwLayoutNetworkButtonsPhysics" + this.nodeID);
+            physicsButton.addEventListener('click', this.stopPhysics.bind(this));
+        }
+
+
+        this.buildEdges();
+        this.enableSaveButtonEvent();
+        this.enableExpertModeButtonEvent();
+
+
+        if (this.removeLonely) {
+            var removeLonelyButton = document.getElementById("cwLayoutNetworkButtonsLonelyNodes" + this.nodeID);
+            removeLonelyButton.addEventListener('click', this.removeLonelyButtonAction.bind(this));
+        }
+        var downloadButton = document.getElementById("cwLayoutNetworkButtonsDownload" + this.nodeID);
+        downloadButton.addEventListener('click', this.downloadImage.bind(this));
+
+        var deSelectAllButton = document.getElementById("cwLayoutNetworkDeselectAll" + this.nodeID);
+        deSelectAllButton.addEventListener('click', this.deActivateAllGroup.bind(this));
+
+        var selectAllButton = document.getElementById("cwLayoutNetworkSelectAll" + this.nodeID);
+        selectAllButton.addEventListener('click', this.activateAllGroup.bind(this));
+
+        var behaviourButton = document.getElementById("cwLayoutNetworkButtonsBehaviour" + this.nodeID);
+        behaviourButton.addEventListener("click", this.externalfilterModifyBehaviour.bind(this));
+        this.externalfilterUpdateBehaviourTitle(behaviourButton);
+
+
+        // fill the search filter
+        this.nodes.on("add", this.addSearchFilterElement.bind(this));
+        this.nodes.on("remove", this.removeSearchFilterElement.bind(this));
+
+        if (!this.wiggle) {
+            // Activate Starting element
+            this.activateStartingGroup();
+        }
+        
+        this.activateStartingEdgeType();
+        // initialize your network 
+        this.networkUI = new vis.Network(networkContainer, data, this.networkOptions);
+
+
+        if (this.wiggle) {
+            // Activate Starting element
+            this.activateStartingGroup();
+        }
+
+        // before drawing event
+        this.networkUI.on("afterDrawing", this.afterDrawing.bind(this));
+        this.networkUI.on("beforeDrawing", this.beforeDrawing.bind(this));
+
+
+        // Activate Cluster
+        if(!this.startingNetwork) this.activateStartingCluster();
+
+        // Creation du menu et binding
+        this.createMenu(networkContainer);
+        networkContainer.addEventListener('RemoveNode', this.RemoveNodeEvent.bind(this));
+        networkContainer.addEventListener('AddClosesNodes', this.AddClosesNodes.bind(this));
+        networkContainer.addEventListener('RemoveClosesNodes', this.RemoveClosesNodes.bind(this));
+        networkContainer.addEventListener('AddAllNodesFrom', this.AddAllNodesFrom.bind(this));
+        networkContainer.addEventListener('AddAllNodesTo', this.AddAllNodesTo.bind(this));
+        networkContainer.addEventListener('AddAllConnectedNodes', this.AddAllConnectedNodes.bind(this));
+
+        // Interaction Click
+        this.networkUI.on("click", function(params) {
+            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
+                if (self.networkUI.isCluster(params.nodes[0]) == true) {
+                    self.networkUI.openCluster(params.nodes[0]);
+                } else {
+                    let node = self.nodes.get(params.nodes[0]);
+                    self.openPopOut(node.object_id, node.objectTypeScriptName);
+                }
+            } else if (params.hasOwnProperty('edges') && params.edges.length === 1) {
+                var edge = self.edges.get(params.edges[0]);
+                self.openPopOutFromEdge(edge);
+            };
+        });
+
+        this.networkUI.on("dragStart", function(params) {
+            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
+                self.dragged[params.nodes[0]] = true;
+
+            }
+        });
+
+        this.networkUI.on("dragEnd", function(params) {
+            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
+                delete self.dragged[params.nodes[0]];
+            }
+        });
+
+
+        this.networkUI.on("doubleClick", function(params) {
+            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
+                let node = self.nodes.get(params.nodes[0]);
+                self.openObjectPage(node.object_id, node.objectTypeScriptName);
+            } else if (params.hasOwnProperty('edges') && params.edges.length === 1) {
+                var edge = self.edges.get(params.edges[0]);
+                if (edge.scriptname && edge.object_id) {
+                    self.openObjectPage(edge.object_id, edge.scriptname);
+                }
+
+            };
+        });
+
+
+        var stop = false;
+        this.networkUI.on("stabilizationIterationsDone", function() {
+            window.setTimeout(function(params) {
+                self.networkUI.fit({
+                    nodes: self.nodes.getIds(),
+                    animation: true
+                });
+                self.networkUI.removeEventListener("startStabilizing");
+                //networkContainer.style["visibility"] = "visible";
+                //$('.cwloading').hide(); 
+            }, 1000);
+        });
+        if (this.viewSchema.ViewName.indexOf("popout") !== -1) {
+            this.networkUI.on("resize", function(params) {
+                self.networkUI.fit({
+                    nodes: self.nodes.getIds(),
+                    animation: true
+                });
+            });
+        }
+
+        this.fillFilter(nodes);
+
+        if (this.physicsOptionInitialState === false) {
+            this.updatePhysics(false);
+            this.networkOptions.physics.enabled = true;
+        };
+        this.indirectSave(true);
+
+        this.saveEvent = false;
+        this.addEventOnSave();
+
+
+        if(this.startingNetwork && this.networkConfiguration && this.networkConfiguration.nodes) {
+            let startCwApiNetwork = this.networkConfiguration.nodes[Object.keys(this.networkConfiguration.nodes)[0]];
+            if(startCwApiNetwork && startCwApiNetwork.configuration) {
+                this.loadCwApiNetwork(startCwApiNetwork.configuration);
+                self.networkConfiguration.selected = startCwApiNetwork;
+                $('select.selectNetworkConfiguration_' + this.nodeID).each(function( index ) { // put values into filters
+                    $(this).selectpicker('val',startCwApiNetwork.label ); //init cwAPInetworkfilter
+                });               
+            }
+
+        }
+
+    };
+
+    // Building network
+    cwLayoutNetwork.prototype.setFilters = function() {
+
+        var self = this;
+        var filterContainer = document.getElementById("cwLayoutNetworkFilter" + this.nodeID);
+        var actionContainer = document.getElementById("cwLayoutNetworkAction" + this.nodeID);
+        var networkContainer = document.getElementById("cwLayoutNetworkCanva" + this.nodeID);
+        this.createFilterObjects(filterContainer);
 
 
         // Adding filter options
@@ -109,7 +305,6 @@
         //give bootstrap select to filter
         $('.selectNetworkPicker_' + this.nodeID).selectpicker();
         $('.selectNetworkExternal_' + this.nodeID).selectpicker();
-        $('.selectNetworkSearch_' + this.nodeID).selectpicker();
         $('.selectNetworkConfiguration_' + this.nodeID).selectpicker();
         if (this.networkConfiguration.enableEdit && this.canCreateNetwork) {
             $('.selectNetworkConfiguration_' + this.nodeID)[0].children[1].children[0].appendChild(this.createAddButton());
@@ -127,8 +322,7 @@
         var canvaHeight = window.innerHeight - titleReact.height - actionReact.height - filterReact.height - topBarReact.height;
         networkContainer.setAttribute('style', 'height:' + canvaHeight + 'px');
 
-        var self = this;
-
+       
 
         // Event for filter
         // Network Node Selector
@@ -274,193 +468,26 @@
             if (cwAPI.isDebugMode() === true) console.log("network set");
         });
 
-        // Event for filter
-        // Move On a Node
-        $('select.selectNetworkSearch_' + this.nodeID).on('changed.bs.select', function(e, clickedIndex, newValue, oldValue) {
-
-            var changeSet, id, nodeId, i;
-            var groupArray = {};
-            if (clickedIndex !== undefined && $(this).context.hasOwnProperty(clickedIndex)) {
-                id = $(this).context[clickedIndex]['id'];
-                var options = {
-                    position: self.networkUI.getPositions()[id],
-                    scale: 2,
-                    offset: {
-                        x: 0,
-                        y: 0
-                    },
-                    animation: true // default duration is 1000ms and default easingFunction is easeInOutQuad.
-                };
-                self.networkUI.moveTo(options);
-
-                options = {
-                    "nodes": [id]
-                };
-                self.networkUI.setSelection(options);
-            }
-            $(this).selectpicker('val', "");
-        });
+    };
 
 
-        // Action for button
-        /* if(this.clusterOption) {
-            var clusterButton = document.getElementById("cwLayoutNetworkButtonsCluster" + this.nodeID); 
-            clusterButton.addEventListener('click', this.clusterByHubsize.bind(this));              
-        }*/
-
-        if (this.physicsOption && this.hidePhysicsButton === false) {
-            var physicsButton = document.getElementById("cwLayoutNetworkButtonsPhysics" + this.nodeID);
-            physicsButton.addEventListener('click', this.stopPhysics.bind(this));
-        }
-
-        if (this.edgeOption) {
-            if (this.hideEdgeButton === false) {
-                var zipEdgeButton = document.getElementById("cwLayoutNetworkButtonsZipEdge" + this.nodeID);
-                zipEdgeButton.addEventListener('click', this.edgeZipButtonAction.bind(this));
-            }
-
-            this.createUnzipEdge();
-
-            var event = {};
-            event.target = zipEdgeButton;
-            if (this.edgeZipped === false) {
-                this.edgeZipped = true;
-                this.edgeZipButtonAction(event);
-            }
-        }
-
+    // Save Button Event
+    cwLayoutNetwork.prototype.enableSaveButtonEvent = function() {
         var saveButton = document.getElementById("nodeConfigurationSaveButton_" + this.nodeID);
         if (saveButton) {
             saveButton.addEventListener('click', this.saveIndexPage.bind(this));
         }
+    };
 
 
-
-        if (this.removeLonely) {
-            var removeLonelyButton = document.getElementById("cwLayoutNetworkButtonsLonelyNodes" + this.nodeID);
-            removeLonelyButton.addEventListener('click', this.removeLonelyButtonAction.bind(this));
-        }
-        var downloadButton = document.getElementById("cwLayoutNetworkButtonsDownload" + this.nodeID);
-        downloadButton.addEventListener('click', this.downloadImage.bind(this));
-
-        var deSelectAllButton = document.getElementById("cwLayoutNetworkDeselectAll" + this.nodeID);
-        deSelectAllButton.addEventListener('click', this.deActivateAllGroup.bind(this));
-
-        var selectAllButton = document.getElementById("cwLayoutNetworkSelectAll" + this.nodeID);
-        selectAllButton.addEventListener('click', this.activateAllGroup.bind(this));
-
-        var behaviourButton = document.getElementById("cwLayoutNetworkButtonsBehaviour" + this.nodeID);
-        behaviourButton.addEventListener("click", this.externalfilterModifyBehaviour.bind(this));
-        this.externalfilterUpdateBehaviourTitle(behaviourButton);
-
-
-        // fill the search filter
-        this.nodes.on("add", this.addSearchFilterElement.bind(this));
-        this.nodes.on("remove", this.removeSearchFilterElement.bind(this));
-
-        if (!this.wiggle) {
-            // Activate Starting element
-            this.activateStartingGroup();
-        }
-        
-        this.activateStartingEdgeType();
-        // initialize your network 
-        this.networkUI = new vis.Network(networkContainer, data, this.networkOptions);
-
-
-        if (this.wiggle) {
-            // Activate Starting element
-            this.activateStartingGroup();
-        }
-
-        // before drawing event
-        this.networkUI.on("beforeDrawing", this.beforeDrawing.bind(this));
-
-        // Activate Cluster
-        if(!this.startingNetwork) this.activateStartingCluster();
-
-        // Creation du menu et binding
-        this.createMenu(networkContainer);
-        networkContainer.addEventListener('RemoveNode', this.RemoveNodeEvent.bind(this));
-        networkContainer.addEventListener('AddClosesNodes', this.AddClosesNodes.bind(this));
-        networkContainer.addEventListener('RemoveClosesNodes', this.RemoveClosesNodes.bind(this));
-        networkContainer.addEventListener('AddAllNodesFrom', this.AddAllNodesFrom.bind(this));
-        networkContainer.addEventListener('AddAllNodesTo', this.AddAllNodesTo.bind(this));
-        networkContainer.addEventListener('AddAllConnectedNodes', this.AddAllConnectedNodes.bind(this));
-
-        // Interaction Click
-        this.networkUI.on("click", function(params) {
-            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
-                if (self.networkUI.isCluster(params.nodes[0]) == true) {
-                    self.networkUI.openCluster(params.nodes[0]);
-                } else {
-                    let node = self.nodes.get(params.nodes[0]);
-                    self.openPopOut(node.object_id, node.objectTypeScriptName);
-                }
-            } else if (params.hasOwnProperty('edges') && params.edges.length === 1) {
-                var edge = self.edges.get(params.edges[0]);
-                self.openPopOutFromEdge(edge);
-            };
-        });
-
-        this.networkUI.on("doubleClick", function(params) {
-            if (params.hasOwnProperty('nodes') && params.nodes.length === 1) {
-                let node = self.nodes.get(params.nodes[0]);
-                self.openObjectPage(node.object_id, node.objectTypeScriptName);
-            } else if (params.hasOwnProperty('edges') && params.edges.length === 1) {
-                var edge = self.edges.get(params.edges[0]);
-                if (edge.scriptname && edge.object_id) {
-                    self.openObjectPage(edge.object_id, edge.scriptname);
-                }
-
-            };
-        });
-
-
-        var stop = false;
-        this.networkUI.on("stabilizationIterationsDone", function() {
-            window.setTimeout(function(params) {
-                self.networkUI.fit({
-                    nodes: self.nodes.getIds(),
-                    animation: true
-                });
-                self.networkUI.removeEventListener("startStabilizing");
-                //networkContainer.style["visibility"] = "visible";
-                //$('.cwloading').hide(); 
-            }, 1000);
-        });
-        if (this.viewSchema.ViewName.indexOf("popout") !== -1) {
-            this.networkUI.on("resize", function(params) {
-                self.networkUI.fit({
-                    nodes: self.nodes.getIds(),
-                    animation: true
-                });
-            });
-        }
-
-        this.fillFilter(nodes);
-
-        if (this.physicsOptionInitialState === false) {
-            this.updatePhysics(false);
-            this.networkOptions.physics.enabled = true;
-        };
-        this.indirectSave(true);
-
-        this.saveEvent = false;
-        this.addEventOnSave();
-
-
-        if(this.startingNetwork && this.networkConfiguration && this.networkConfiguration.nodes) {
-            let startCwApiNetwork = this.networkConfiguration.nodes[Object.keys(this.networkConfiguration.nodes)[0]];
-            if(startCwApiNetwork.configuration) {
-                this.loadCwApiNetwork(startCwApiNetwork.configuration);
-                $('select.selectNetworkConfiguration_' + this.nodeID).each(function( index ) { // put values into filters
-                    $(this).selectpicker('val',startCwApiNetwork.label ); //init cwAPInetworkfilter
-                });               
+    // Expert Mode Button Event
+    cwLayoutNetwork.prototype.enableExpertModeButtonEvent = function() {
+        if(this.expertModeAvailable) {
+            var expertButton = document.getElementById("cwLayoutNetworkExpertModeButton" + this.nodeID);
+            if(expertButton) {
+                expertButton.addEventListener('click', this.manageExpertMode.bind(this));
             }
-
         }
-
     };
 
 

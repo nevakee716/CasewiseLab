@@ -31,8 +31,8 @@
         this.networkConfiguration = {};
         this.networkConfiguration.enableEdit = this.options.CustomOptions['enableEdit'];
         this.networkConfiguration.nodes = {}; 
-        
-
+        this.expertMode = false;
+        this.expertModeAvailable = this.options.CustomOptions['expertMode'];
 
         try {
             this.definition.capinetworkCreateOnViewDisplayName = cwAPI.mm.getProperty(this.definition.capinetworkScriptname,this.definition.capinetworkCreateOnViewScriptname).name;
@@ -64,7 +64,7 @@
         this.specificGroup = [];
         this.directionList = [];
         this.groupToSelectOnStart = [];
-        this.objects = {};
+
         this.layoutsByNodeId = {};
         this.clusters = [];
         this.init = true;
@@ -72,15 +72,26 @@
         this.clusterByGroupOption = {};
         this.clusterByGroupOption.head = "";
         this.clusterByGroupOption.child = [];
+        this.dragged = {};
+
+
+        this.originalOptions = {};
+        this.originalOptions.groupString = this.options.CustomOptions['iconGroup'];
+        this.originalOptions.directionListString = this.options.CustomOptions['arrowDirection'];
+        this.originalOptions.newNodeFilteredString = this.options.CustomOptions['filterNode'];
+        this.originalOptions.specificGroupString = this.options.CustomOptions['specificGroup'];
+        this.originalOptions.hiddenNodesString = this.options.CustomOptions['hidden-nodes'];
+        this.originalOptions.duplicateNodesString = this.options.CustomOptions['duplicateNodes'];
+        this.originalOptions.complementaryNodesString = this.options.CustomOptions['complementaryNode'];
 
 
 
         this.multiLineCount = this.options.CustomOptions['multiLineCount'];
         this.getOption('complementaryNode','complementaryNode',',');
+        this.getOption('contextualFilter','contextualNode',',');
         this.getOption('hidden-nodes','hiddenNodes',',');
         this.getOption('groupToSelectOnStart','groupToSelectOnStart',',');        
         this.getOption('specificGroup','specificGroup','#',',');
-        this.getOption('complementaryNode','assignEdge','#',',');     
         this.getOption('popOutList','popOut','#',',');       
 
         this.startingNetwork = this.options.CustomOptions['startingNetwork'];
@@ -103,9 +114,12 @@
         this.physicsOption = this.options.CustomOptions['physicsOn'];
         this.hidePhysicsButton = this.options.CustomOptions['hidePhysicsButton'];
         this.physicsOptionInitialState = this.options.CustomOptions['physicsInitialState'];
+        this.physConfiguration = this.options.CustomOptions['physicsConfiguration'];
+
 
         this.removeLonely = this.options.CustomOptions['removeLonelyOn'];
 
+        this.assignEdge = {};
         try {
             this.edgeConfiguration = JSON.parse(this.options.CustomOptions['edgeColor']);
             this.getOption('edgeTypeToSelect','edgeTypeToSelect',',');     
@@ -114,7 +128,7 @@
             this.edgeConfiguration = {};
         }
 
-
+        this.originalObjects = {};
         this.wiggle = true;
         this.CDSNodesOption = true;
         this.CDSFilterOption = true;
@@ -123,6 +137,12 @@
             "CDSFilterOption": this.CDSFilterOption,
             "CDSNodesOption": this.CDSNodesOption
         };
+
+
+
+        this.loadDiagramTemplate("z_diagram_template");
+  
+
 
     };
 

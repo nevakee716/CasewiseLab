@@ -9,6 +9,7 @@
         this.id = id;
         this.object_id = object_id;
         this.label = label;
+        this.shortlabel = label.slice(0,50);
         this.status = status;
         this.customDisplayString = customDisplayString;
         this.filterArray = filterArray;
@@ -48,13 +49,13 @@
         obj.id = this.id;
         obj.object_id = this.object_id;
         if(this.options.CDSNodesOption) {
-            obj.label = this.customDisplayString;
+            obj.label = this.shortlabel;
             obj.name = this.label;
         }
         else {
             obj.label = this.label;
         }
-        obj.font = {'size': 9};
+
         if(this.x) {
             obj.x = this.x;
             this.x = undefined;
